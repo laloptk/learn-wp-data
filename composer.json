@@ -1,0 +1,20 @@
+{
+  "name": "learn-wp-data/learn-wp-data",
+  "description": "Plugin intended to show how data is handled in WordPress",
+  "require": {
+    "php": ">=7.4.0"
+  },
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Eduardo Sanchez Hidalgo",
+      "email": "laloptk@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "LearnWPData\\": "includes/"
+    }
+  }
+}
