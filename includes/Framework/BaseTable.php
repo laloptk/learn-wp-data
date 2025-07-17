@@ -85,7 +85,7 @@ abstract class BaseTable
      * @return string Full prefixed table name.
      * @throws \Exception If slug is missing or invalid.
      */
-    protected function get_table_name(): string
+    public function get_table_name(): string
     {
         if (empty($this->slug) || !is_string($this->slug)) {
             throw new \Exception(
