@@ -21,7 +21,7 @@ class NotesTable extends BaseTable
      *
      * @var string
      */
-    protected string $slug = 'lwpd_notes';
+    protected ?string $slug = 'lwpd_notes';
 
     /**
      * Returns the CREATE TABLE SQL statement for dbDelta().
