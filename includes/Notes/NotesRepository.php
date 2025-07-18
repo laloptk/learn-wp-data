@@ -2,7 +2,7 @@
 
 namespace LearnWPData\Notes;
 
-use \Exception;
+use Exception;
 use wpdb;
 
 defined('ABSPATH') || exit;
@@ -22,93 +22,101 @@ class NotesRepository
         global $wpdb;
         $this->wpdb = $wpdb;
 
-        $notes_table = new NotesTable();
+        $notes_table     = new NotesTable();
         $this->table_name = $notes_table->get_table_name();
     }
 
     /**
      * Inserts a new note.
      *
-     * @param array $args Associative array with keys: user_id, title, content, status.
-     * @throws Exception if data is invalid or DB insert fails.
+     * @param array $args Must include: user_id (int), title (string), content (string),
+     *                    and optionally status ('active' or 'archived').
+     * @throws Exception if validation fails or DB insert fails.
      */
-    public function insert_note( array $args ): void
+    public function insert_note(array $args): void
     {
-        $data = $this->get_sanitized_data( $args );
+        $now = current_time('mysql');
+
+        // Sanitize and validate user-provided fields
+        $data = $this->get_sanitized_data($args);
+
+        // Always add timestamps
+        $data['created_at'] = $now;
+        $data['updated_at'] = $now;
+
+        // Generate correct format dynamically
+        $format = $this->build_format($data);
 
         $result = $this->wpdb->insert(
             $this->table_name,
             $data,
-            ['%d', '%s', '%s', '%s', '%s', '%s'] // placeholders for each field
+            $format
         );
 
-        if ( $result === false ) {
+        if ($result === false) {
             throw new Exception('Failed to insert note into database.');
         }
     }
 
     /**
-     * Sanitizes and validates note data.
+     * Updates an existing note by ID with only the allowed fields.
      *
-     * - user_id must be a valid integer
-     * - title is plain text
-     * - content allows safe HTML
-     * - status must be "active" or "archived"
-     *
-     * @param array $args Raw input data.
-     * @return array Sanitized and validated data ready for DB insert.
-     * @throws Exception if validation fails.
+     * @param int $id Note ID.
+     * @param array $args Keys may include: title, content, status.
+     * @return bool True if row updated, false if no rows affected.
+     * @throws Exception if ID invalid, no valid fields provided, or DB error.
      */
-    protected function get_sanitized_data( array $args ): array
+    public function update_note(int $id, array $args): bool
     {
-        // Validate and sanitize user_id
-        $user_id = absint( $args['user_id'] ?? 0 );
-        if ( $user_id === 0 ) {
-            throw new Exception('The user_id must be a valid non-zero integer.');
+        $id = absint($id);
+        if ($id === 0) {
+            throw new Exception('The note ID must be a positive integer.');
         }
 
-        // Sanitize title
-        $title = sanitize_text_field( $args['title'] ?? '' );
-        if ( $title === '' ) {
-            throw new Exception('Title cannot be empty.');
+        // Only allow updating specific fields
+        $allowed_update_fields = ['title', 'content', 'status'];
+        $filtered_args         = array_intersect_key($args, array_flip($allowed_update_fields));
+
+        if (empty($filtered_args)) {
+            throw new Exception('No valid fields provided for update.');
         }
 
-        // Sanitize content (allow safe HTML)
-        $content = wp_kses_post( $args['content'] ?? '' );
+        // Sanitize/validate allowed fields
+        $data = $this->get_sanitized_data($filtered_args);
 
-        // Sanitize and validate status
-        $status = sanitize_text_field( $args['status'] ?? 'active' );
-        if ( ! in_array( $status, ['active', 'archived'], true ) ) {
-            throw new Exception('Invalid status value. Must be active or archived.');
+        // Always bump updated_at
+        $data['updated_at'] = current_time('mysql');
+
+        // Generate format dynamically
+        $format = $this->build_format($data);
+
+        $result = $this->wpdb->update(
+            $this->table_name,
+            $data,
+            ['id' => $id],
+            $format,
+            ['%d'] // where_format
+        );
+
+        if ($result === false) {
+            throw new Exception('Failed to update note in database.');
         }
 
-        // Add timestamps automatically
-        $now = current_time( 'mysql' );
-
-        return [
-            'user_id'    => $user_id,
-            'title'      => $title,
-            'content'    => $content,
-            'status'     => $status,
-            'created_at' => $now,
-            'updated_at' => $now,
-        ];
+        return $result > 0;
     }
 
     /**
-     * Get a single note by its ID.
-     *
-     * Always returns the row regardless of its status, so the caller can inspect it.
+     * Get a single note by its ID (regardless of status).
      *
      * @param int $id Must be a valid non-zero integer.
-     * @return array|null Returns the note as an associative array, or null if not found.
-     * @throws \Exception If the note ID is invalid.
+     * @return array|null Note row as associative array, or null if not found.
+     * @throws Exception If ID is invalid.
      */
     public function get_note_by_id(int $id): ?array
     {
         $id = absint($id);
         if ($id === 0) {
-            throw new \Exception('The note ID must be a valid non-zero integer.');
+            throw new Exception('The note ID must be a valid non-zero integer.');
         }
 
         $sql = $this->wpdb->prepare(
@@ -117,29 +125,28 @@ class NotesRepository
         );
 
         $result = $this->wpdb->get_row($sql, ARRAY_A);
+
         return $result ?: null;
     }
 
     /**
      * Get all notes for a user filtered by status.
      *
-     * Unlike get_note_by_id(), this explicitly filters by 'active' or 'archived'.
-     *
      * @param int $user_id Must be a valid non-zero integer.
      * @param string $status Must be 'active' or 'archived'.
      * @return array List of notes as associative arrays.
-     * @throws \Exception If user_id or status is invalid.
+     * @throws Exception If user_id invalid or status invalid.
      */
     public function get_notes_by_user(int $user_id, string $status = 'active'): array
     {
         $user_id = absint($user_id);
         if ($user_id === 0) {
-            throw new \Exception('The user_id must be a valid non-zero integer.');
+            throw new Exception('The user_id must be a valid non-zero integer.');
         }
 
         $status = sanitize_text_field($status);
         if (!in_array($status, ['active', 'archived'], true)) {
-            throw new \Exception('Invalid status filter. Must be active or archived.');
+            throw new Exception('Invalid status filter. Must be active or archived.');
         }
 
         $sql = $this->wpdb->prepare(
@@ -151,11 +158,18 @@ class NotesRepository
         return $this->wpdb->get_results($sql, ARRAY_A);
     }
 
+    /**
+     * Soft delete a note (set status to archived).
+     *
+     * @param int $id Note ID.
+     * @return bool True if updated, false if no rows found.
+     * @throws Exception on DB error or invalid ID.
+     */
     public function soft_delete_note(int $id): bool
     {
         $id = absint($id);
         if ($id === 0) {
-            throw new \Exception('The note ID must be a positive integer.');
+            throw new Exception('The note ID must be a positive integer.');
         }
 
         $result = $this->wpdb->update(
@@ -164,37 +178,102 @@ class NotesRepository
                 'status'     => 'archived',
                 'updated_at' => current_time('mysql'),
             ],
-            [ 'id' => $id ],
-            [ '%s', '%s' ],
-            [ '%d' ]
+            ['id' => $id],
+            ['%s', '%s'],
+            ['%d']
         );
 
         if ($result === false) {
-            throw new \Exception("Soft deleting the note failed due to a database error.");
+            throw new Exception("Soft deleting the note failed due to a database error.");
         }
 
-        // Returns true if row updated, false if no row matched (ID not found)
         return $result > 0;
     }
 
+    /**
+     * Hard delete a note (remove row completely).
+     *
+     * @param int $id Note ID.
+     * @return bool True if deleted, false if no rows found.
+     * @throws Exception on DB error or invalid ID.
+     */
     public function hard_delete_note(int $id): bool
     {
         $id = absint($id);
         if ($id === 0) {
-            throw new \Exception('The note ID must be a positive integer.');
+            throw new Exception('The note ID must be a positive integer.');
         }
 
         $result = $this->wpdb->delete(
             $this->table_name,
-            [ 'id' => $id ],
-            [ '%d' ]
+            ['id' => $id],
+            ['%d']
         );
 
         if ($result === false) {
-            throw new \Exception("Soft deleting the note failed due to a database error.");
+            throw new Exception("Hard deleting the note failed due to a database error.");
         }
 
-        // Returns true if row updated, false if no row matched (ID not found)
         return $result > 0;
     }
+
+    /**
+     * Sanitizes and validates allowed note fields.
+     *
+     * @param array $args Raw fields (user_id, title, content, status).
+     * @return array Sanitized and validated data ready for DB use.
+     * @throws Exception if any field is invalid.
+     */
+    protected function get_sanitized_data(array $args): array
+    {
+        $sanitized_args = $args;
+
+        foreach ($args as $key => $value) {
+            switch ($key) {
+                case 'user_id':
+                    $sanitized_args['user_id'] = absint($sanitized_args['user_id']);
+                    if ($sanitized_args['user_id'] === 0) {
+                        throw new Exception('The user_id must be a valid non-zero integer.');
+                    }
+                    break;
+
+                case 'title':
+                    $sanitized_args['title'] = sanitize_text_field($sanitized_args['title']);
+                    if ($sanitized_args['title'] === '') {
+                        throw new Exception('Title cannot be empty.');
+                    }
+                    break;
+ 
+                case 'content':
+                    $sanitized_args['content'] = wp_kses_post($sanitized_args['content']);
+                    break;
+
+                case 'status':
+                    $sanitized_args['status'] = sanitize_text_field($sanitized_args['status'] ?? 'active');
+                    if (!in_array($sanitized_args['status'], ['active', 'archived'], true)) {
+                        throw new Exception('Invalid status value. Must be active or archived.');
+                    }
+                    break;
+            }
+        }
+
+        return $sanitized_args;
+    }
+
+    /**
+     * Builds a format array for wpdb->insert() or update() based on data keys.
+     *
+     * user_id => %d, everything else => %s
+     *
+     * @param array $data Data array to generate format for.
+     * @return array Format array matching keys order.
+     */
+    protected function build_format(array $data): array
+    {
+        return array_map(
+            fn($key) => $key === 'user_id' ? '%d' : '%s',
+            array_keys($data)
+        );
+    }
 }
+
