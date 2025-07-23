@@ -12,6 +12,7 @@ require __DIR__.'/vendor/autoload.php';
 use LearnWPData\Plugin;
 use LearnWPData\Notes\NotesController;
 use LearnWPData\Notes\NotesRepository;
+use LearnWPData\Notes\Admin\NotesAdminPage;
 
 Plugin::init(__FILE__);
 
@@ -29,3 +30,5 @@ add_action('rest_api_init', function () {
     // 3️⃣ Register the REST routes
     $controller->register_routes();
 });
+
+new NotesAdminPage();
