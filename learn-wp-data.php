@@ -10,12 +10,22 @@ defined('ABSPATH') || exit;
 require __DIR__.'/vendor/autoload.php';
 
 use LearnWPData\Plugin;
-//use LearnWPData\Notes\NotesRepository;
+use LearnWPData\Notes\NotesController;
+use LearnWPData\Notes\NotesRepository;
 
 Plugin::init(__FILE__);
 
-/*$repo = new NotesRepository();
-$repo->insert(['user_id' => 41, 'title' => 'Test', 'content' => '...', 'status' => 'active']);
-$repo->update(8, ['title' => 'Updated']);
-$repo->soft_delete(1);
-$repo->delete(2);*/
+/**
+ * Hook REST API routes on rest_api_init
+ */
+add_action('rest_api_init', function () {
+
+    // 1️⃣ Create a repository instance
+    $repo = new NotesRepository();
+
+    // 2️⃣ Create the controller, injecting the repo
+    $controller = new NotesController($repo);
+
+    // 3️⃣ Register the REST routes
+    $controller->register_routes();
+});
