@@ -14,6 +14,16 @@
     // Show the form organism
     learnwpdata_render_template('organisms/notes-form-section.php', []);
 
+    learnwpdata_render_template('molecules/search-box.php', [
+        'placeholder' => __('Search notes…', 'learnwpdata'),
+        'value'       => $search ?? '',
+        'name'        => 's',
+        'submit_text' => __('Search', 'learnwpdata'),
+        'hidden'      => [
+            'page' => $_GET['page'] ?? 'learnwpdata-admin'
+        ],
+    ]);
+
     // Show the table organism
     learnwpdata_render_template('organisms/notes-table-section.php', [
         'notes' => $notes ?? [],

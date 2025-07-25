@@ -1,14 +1,5 @@
 <h2><?php esc_html_e('Existing Notes', 'learnwpdata'); ?></h2>
 
-<form method="get">
-    <input type="hidden" name="page" value="<?php echo esc_attr($_GET['page']); ?>">
-    <p class="search-box">
-        <label class="screen-reader-text" for="note-search-input"><?php esc_html_e('Search Notes', 'learnwpdata'); ?></label>
-        <input type="search" id="note-search-input" name="s" value="<?php echo esc_attr($search ?? ''); ?>">
-        <input type="submit" class="button" value="<?php esc_attr_e('Search', 'learnwpdata'); ?>">
-    </p>
-</form>
-
 <table class="widefat striped">
     <thead>
         <tr>
