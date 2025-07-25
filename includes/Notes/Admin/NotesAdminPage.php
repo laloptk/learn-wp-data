@@ -2,6 +2,7 @@
 namespace LearnWPData\Notes\Admin;
 
 use LearnWPData\Framework\Admin\BaseAdminPage;
+use LearnWPData\Notes\NotesRepository;
 
 defined('ABSPATH') || exit;
 
@@ -12,32 +13,69 @@ defined('ABSPATH') || exit;
  */
 class NotesAdminPage extends BaseAdminPage {
 
-    public function __construct() {
+    protected NotesRepository $repo;
+
+    public function __construct(NotesRepository $repo) {
         $this->menu_slug  = 'learnwpdata-admin';
         $this->menu_title = __('LearnWPData', 'learnwpdata');
         $this->icon       = 'dashicons-database';
+        $this->repo       = $repo;
         parent::__construct();
     }
 
     public function render_page(): void {
-        echo '<div id="learnwpdata-admin-root"></div>';
+        $notices = $this->handle_form_submission();
+        $notes   = $this->repo->all();
+
+        learnwpdata_render_template(
+            'layouts/notes-admin-page.php', 
+            [
+                'page_title' => __('LearnWPData Notes', 'learnwpdata'),
+                'notices'    => $notices,
+                'notes'      => $notes,
+            ]
+        );
     }
 
     protected function enqueue_page_assets(): void {
-        $asset_file = plugin_dir_url(__FILE__) . '../../../build/admin.js';
+        
+    }
 
-        wp_enqueue_script(
-            'learnwpdata-admin',
-            $asset_file,
-            ['wp-element'], // React provided by WP
-            '1.0.0',
-            true
-        );
+    private function handle_form_submission() {
+        $notices = [];
 
-        wp_localize_script('learnwpdata-admin', 'LearnWPDataConfig', [
-            'restUrl' => esc_url_raw(rest_url('learnwpdata/v1/')),
-            'nonce'   => wp_create_nonce('wp_rest'),
-        ]);
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['learnwpdata_notes_nonce'])) {
+
+            if (!wp_verify_nonce($_POST['learnwpdata_notes_nonce'], 'learnwpdata_save_note')) {
+                $notices[] = [
+                    'type'    => 'notice-error',
+                    'message' => __('Security check failed.', 'learnwpdata'),
+                ];
+                return $notices;
+            }
+
+            $title   = sanitize_text_field($_POST['note_title'] ?? '');
+            $content = sanitize_textarea_field($_POST['note_content'] ?? '');
+
+            if ($title && $content) {
+                $this->repo->create([
+                    'title'   => $title,
+                    'content' => $content,
+                ]);
+
+                $notices[] = [
+                    'type'    => 'notice-success',
+                    'message' => __('Note saved successfully!', 'learnwpdata'),
+                ];
+            } else {
+                $notices[] = [
+                    'type'    => 'notice-error',
+                    'message' => __('Both title and content are required.', 'learnwpdata'),
+                ];
+            }
+        }
+
+        return $notices;
     }
 }
 

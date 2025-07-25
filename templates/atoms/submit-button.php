@@ -1,0 +1,1 @@
+<?php submit_button($label ?? __('Save', 'learnwpdata')); ?>

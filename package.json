@@ -3,7 +3,7 @@
     "@wordpress/scripts": "^30.19.0"
   },
   "scripts": {
-      "start": "wp-scripts start",
-      "build": "wp-scripts build"
+    "start": "wp-scripts start",
+    "build": "wp-scripts build"
   }
 }

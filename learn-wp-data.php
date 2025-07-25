@@ -7,7 +7,12 @@
 
 defined('ABSPATH') || exit;
 
-require __DIR__.'/vendor/autoload.php';
+define( 'LEARNWPDATA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'LEARNWPDATA_PLUGIN_DIR', __DIR__ );
+
+require_once LEARNWPDATA_PLUGIN_DIR . '/includes/helpers-template.php';
+
+require LEARNWPDATA_PLUGIN_DIR .'/vendor/autoload.php';
 
 use LearnWPData\Plugin;
 use LearnWPData\Notes\NotesController;
@@ -31,4 +36,4 @@ add_action('rest_api_init', function () {
     $controller->register_routes();
 });
 
-new NotesAdminPage();
+new NotesAdminPage(new NotesRepository());
