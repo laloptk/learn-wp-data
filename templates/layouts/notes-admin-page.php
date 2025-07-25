@@ -28,5 +28,17 @@
     learnwpdata_render_template('organisms/notes-table-section.php', [
         'notes' => $notes ?? [],
     ]);
+
+    $base_url = add_query_arg([
+        'page' => $_GET['page'] ?? 'learnwpdata-admin',
+        's'    => $search ?? '',
+    ], admin_url('admin.php'));
+
+    learnwpdata_render_template('molecules/pagination.php', [
+        'total'        => $total,
+        'per_page'     => $per_page,
+        'current_page' => $page,
+        'base_url'     => $base_url
+    ]);
     ?>
 </div>

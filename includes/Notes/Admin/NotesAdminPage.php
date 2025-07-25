@@ -24,17 +24,46 @@ class NotesAdminPage extends BaseAdminPage {
     }
 
     public function render_page(): void {
+        // ✅ Handle create/update/delete first
         $notices = $this->handle_form_submission();
-        $notes   = $this->repo->all();
 
-        learnwpdata_render_template(
-            'layouts/notes-admin-page.php', 
-            [
-                'page_title' => __('LearnWPData Notes', 'learnwpdata'),
-                'notices'    => $notices,
-                'notes'      => $notes,
-            ]
-        );
+        // ✅ Collect filters from query string
+        $search   = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
+        $page     = isset($_GET['paged']) ? max(1, (int) $_GET['paged']) : 1;
+        $per_page = 10; // fixed for now, could later make configurable
+
+        // ✅ Fetch filtered + paginated notes
+        $notes = $this->repo->all([
+            'search'   => $search,
+            'page'     => $page,
+            'per_page' => $per_page,
+        ]);
+
+        // ✅ Fetch total count for pagination
+        $total = $this->repo->count_all([
+            'search' => $search,
+        ]);
+
+        // ✅ Optional: calculate pagination HTML (or we’ll use the molecule)
+        // $pagination_html = $this->render_pagination($total, $per_page, $page);
+
+        // ✅ Prefill edit note if requested
+        $edit_note = null;
+        if (!empty($_GET['edit'])) {
+            $edit_note = $this->repo->read((int) $_GET['edit']);
+        }
+
+        // ✅ Render the layout
+        learnwpdata_render_template('layouts/notes-admin-page.php', [
+            'page_title' => __('LearnWPData Notes', 'learnwpdata'),
+            'notices'    => $notices,
+            'notes'      => $notes,
+            'search'     => $search,
+            'total'      => $total,
+            'per_page'   => $per_page,
+            'page'       => $page,
+            'edit_note'  => $edit_note,
+        ]);
     }
 
     protected function enqueue_page_assets(): void {
