@@ -55,8 +55,6 @@ class NotesAdminPage extends BaseAdminPage {
                 return $notices;
             }
 
-            var_dump($_POST['note_status']);
-
             // The repo is going to sanitize the $_POST values
             if ($_POST['note_title'] && $_POST['note_content']) {
                 $this->repo->insert([
