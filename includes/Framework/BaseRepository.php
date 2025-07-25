@@ -66,14 +66,11 @@ abstract class BaseRepository
      */
     public function insert(array $data): int
     {
-        var_dump($data);
         // ✅ Let child repo sanitize + validate before hitting DB
         $sanitized = $this->sanitize_data($data);
-        var_dump($sanitized);
 
         // ✅ Build SQL format string array (allows numeric overrides)
         $format    = $this->build_format($sanitized);
-        var_dump($format);
 
         // ✅ Perform the insert query
         $result = $this->wpdb->insert(
