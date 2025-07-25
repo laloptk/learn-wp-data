@@ -17,16 +17,21 @@
             ],
         ]);
 
-        // Content row
+        // Content row with TinyMCE
         learnwpdata_render_template('molecules/form-row.php', [
-            'name' => 'note_content',
-            'label' => __('Content', 'learnwpdata'),
-            'description' => __('Write the content of your note.', 'learnwpdata'),
-            'atom_template' => 'atoms/textarea.php',
-            'atom_vars' => [
-                'name' => 'note_content',
-                'rows' => 5,
-                'required' => true,
+            'name'         => 'note_content',
+            'label'        => __('Content', 'learnwpdata'),
+            'description'  => __('Write the content of your note using the rich editor.', 'learnwpdata'),
+            'atom_template'=> 'atoms/editor.php',
+            'atom_vars'    => [
+                'name'    => 'note_content',
+                'content' => '', // Prefill if editing
+                'settings'=> [
+                    'textarea_name' => 'note_content',
+                    'textarea_rows' => 10,
+                    'media_buttons' => false,
+                    'teeny'         => true,
+                ],
             ],
         ]);
 
@@ -40,7 +45,6 @@
                 'name'     => 'note_status',
                 'options'  => [
                     'draft'     => __('Draft', 'learnwpdata'),
-                    'published' => __('Published', 'learnwpdata'),
                     'archived'  => __('Archived', 'learnwpdata'),
                     'active'    => __('Active', 'learnwpdata'),
                 ],

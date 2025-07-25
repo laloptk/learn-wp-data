@@ -38,7 +38,8 @@ class NotesAdminPage extends BaseAdminPage {
     }
 
     protected function enqueue_page_assets(): void {
-        
+        // Enqueue WP's TinyMCE + styles
+        wp_enqueue_editor();
     }
 
     private function handle_form_submission() {
@@ -54,13 +55,14 @@ class NotesAdminPage extends BaseAdminPage {
                 return $notices;
             }
 
-            $title   = sanitize_text_field($_POST['note_title'] ?? '');
-            $content = sanitize_textarea_field($_POST['note_content'] ?? '');
+            var_dump($_POST['note_status']);
 
-            if ($title && $content) {
-                $this->repo->create([
-                    'title'   => $title,
-                    'content' => $content,
+            // The repo is going to sanitize the $_POST values
+            if ($_POST['note_title'] && $_POST['note_content']) {
+                $this->repo->insert([
+                    'title'   => $_POST['note_title'],
+                    'content' => $_POST['note_content'],
+                    'status'  => $_POST['note_status'],
                 ]);
 
                 $notices[] = [

@@ -283,7 +283,7 @@ class NotesController extends WP_REST_Controller {
                 'status' => [
                     'description' => __('Status of the note.'),
                     'type'        => 'string',
-                    'enum'        => ['draft', 'published', 'archived', 'active'],
+                    'enum'        => ['draft', 'archived', 'active'],
                     'default'     => 'draft',
                 ],
                 'created_at' => [
@@ -330,7 +330,7 @@ class NotesController extends WP_REST_Controller {
             'status' => [
                 'description'        => __('Limit results to a specific note status.'),
                 'type'               => 'string',
-                'enum'               => ['draft', 'published', 'archived', 'active'],
+                'enum'               => ['draft', 'archived', 'active'],
                 'sanitize_callback'  => 'sanitize_text_field',
             ],
             'orderby' => [

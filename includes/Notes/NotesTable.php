@@ -51,7 +51,7 @@ class NotesTable extends BaseTable
             user_id BIGINT UNSIGNED NOT NULL,
             title VARCHAR(255) NOT NULL,
             content LONGTEXT NOT NULL,
-            status ENUM('active', 'archived') NOT NULL DEFAULT 'active',
+            status ENUM('active', 'archived', 'draft') NOT NULL DEFAULT 'draft',
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY  (id),
