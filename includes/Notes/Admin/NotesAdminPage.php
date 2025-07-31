@@ -24,46 +24,63 @@ class NotesAdminPage extends BaseAdminPage {
     }
 
     public function render_page(): void {
-        // ✅ Handle create/update/delete first
-        $notices = $this->handle_form_submission();
+        $notices = [];
 
-        // ✅ Collect filters from query string
+        // ✅ Handle deletion with nonce check
+        if (
+            isset($_GET['delete'], $_GET['_wpnonce']) &&
+            current_user_can('manage_options')
+        ) {
+            $delete_id = absint($_GET['delete']);
+            if (!wp_verify_nonce($_GET['_wpnonce'], 'learnwpdata_delete_note_' . $delete_id)) {
+                $notices[] = [
+                    'type'    => 'notice-error',
+                    'message' => __('Invalid nonce. Could not delete note.', 'learnwpdata'),
+                ];
+            } elseif ($delete_id > 0) {
+                $this->repo->delete($delete_id);
+                $notices[] = [
+                    'type'    => 'notice-success',
+                    'message' => __('Note deleted successfully.', 'learnwpdata'),
+                ];
+            }
+        }
+
+        // ✅ Handle create/update
+        $notices = array_merge($notices, $this->handle_form_submission());
+
+        // ✅ Filters from query
         $search   = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
         $page     = isset($_GET['paged']) ? max(1, (int) $_GET['paged']) : 1;
-        $per_page = 10; // fixed for now, could later make configurable
+        $per_page = 10;
 
-        // ✅ Fetch filtered + paginated notes
+        // ✅ Fetch notes
         $notes = $this->repo->all([
             'search'   => $search,
             'page'     => $page,
             'per_page' => $per_page,
         ]);
 
-        // ✅ Fetch total count for pagination
         $total = $this->repo->count_all([
             'search' => $search,
         ]);
 
-        // ✅ Optional: calculate pagination HTML (or we’ll use the molecule)
-        // $pagination_html = $this->render_pagination($total, $per_page, $page);
-
-        // ✅ Prefill edit note if requested
         $edit_note = null;
         if (isset($_GET['edit'])) {
             $edit_note_id = (int) $_GET['edit'];
             $edit_note = $this->repo->read($edit_note_id);
         }
 
-        // ✅ Render the layout
+        // ✅ Render layout
         learnwpdata_render_template('layouts/notes-admin-page.php', [
-            'page_title' => __('LearnWPData Notes', 'learnwpdata'),
-            'notices'    => $notices,
-            'notes'      => $notes,
-            'search'     => $search,
-            'total'      => $total,
-            'per_page'   => $per_page,
-            'page'       => $page,
-            'edit_note'  => $edit_note,
+            'page_title'      => __('LearnWPData Notes', 'learnwpdata'),
+            'notices'         => $notices,
+            'notes'           => $notes,
+            'search'          => $search,
+            'total'           => $total,
+            'per_page'        => $per_page,
+            'page'            => $page,
+            'edit_note'       => $edit_note,
         ]);
     }
 
