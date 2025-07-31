@@ -2,7 +2,7 @@
     <?php if (!empty($context['page_title'])) : ?>
         <h1><?php echo esc_html($context['page_title']); ?></h1>
     <?php endif; ?>
-    
+
     <?php
     // ✅ Show notices if any
     if (!empty($context['notices'])) {
@@ -10,9 +10,11 @@
             'notices' => $context['notices'],
         ]);
     }
-
+    
     // ✅ Show the form organism
-    learnwpdata_render_template('organisms/notes-form-section.php', []);
+    learnwpdata_render_template('organisms/notes-form-section.php', 
+    !empty($context['edit_note']) ? $context['edit_note'] : []
+    );
 
     // ✅ Sanitize $_GET['page'] for hidden field
     $current_page_slug = isset($_GET['page']) ? sanitize_key($_GET['page']) : 'learnwpdata-admin';

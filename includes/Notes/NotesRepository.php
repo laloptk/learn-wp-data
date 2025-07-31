@@ -208,7 +208,7 @@ class NotesRepository extends BaseRepository
 
                 case 'status':
                     // Sanitize & validate against allowed statuses
-                    $sanitized_args['status'] = sanitize_text_field($value ?? 'draft');
+                    $sanitized_args['status'] = sanitize_text_field(!empty($value) ? $value : 'draft');
                     if (!in_array($sanitized_args['status'], ['draft', 'archived', 'active'], true)) {
                         throw new Exception('Invalid status value. Must be draft, archived, or active.');
                     }

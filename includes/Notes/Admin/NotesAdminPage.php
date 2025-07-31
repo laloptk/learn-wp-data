@@ -49,8 +49,9 @@ class NotesAdminPage extends BaseAdminPage {
 
         // ✅ Prefill edit note if requested
         $edit_note = null;
-        if (!empty($_GET['edit'])) {
-            $edit_note = $this->repo->read((int) $_GET['edit']);
+        if (isset($_GET['edit'])) {
+            $edit_note_id = (int) $_GET['edit'];
+            $edit_note = $this->repo->read($edit_note_id);
         }
 
         // ✅ Render the layout
@@ -86,11 +87,19 @@ class NotesAdminPage extends BaseAdminPage {
 
             // The repo is going to sanitize the $_POST values
             if ($_POST['note_title'] && $_POST['note_content']) {
-                $this->repo->insert([
+                $note_values = [
                     'title'   => $_POST['note_title'],
                     'content' => $_POST['note_content'],
                     'status'  => $_POST['note_status'],
-                ]);
+                ];
+
+                $note_id = isset($_POST['note_id']) ? absint($_POST['note_id']) : 0;
+                
+                if($note_id === 0) {
+                    $this->repo->insert($note_values);
+                } else {
+                    $this->repo->update($note_id, $note_values);
+                }
 
                 $notices[] = [
                     'type'    => 'notice-success',

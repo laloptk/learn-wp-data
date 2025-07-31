@@ -1,7 +1,9 @@
 <h2><?php esc_html_e('Add New Note', 'learnwpdata'); ?></h2>
 
-<form method="post">
+<form method="post" action="<?php echo esc_url(admin_url('admin.php?page=learnwpdata-admin')); ?>">
     <?php wp_nonce_field('learnwpdata_save_note', 'learnwpdata_notes_nonce'); ?>
+    
+    <input type="hidden" name="note_id" value="<?php echo esc_attr($context['id'] ?? 0); ?>">
 
     <table class="form-table">
         <?php
@@ -13,6 +15,7 @@
             'atom_template' => 'atoms/input-text.php',
             'atom_vars' => [
                 'name' => 'note_title',
+                'value' => isset($context['title']) ? $context['title'] : '',
                 'required' => true,
             ],
         ]);
@@ -25,7 +28,7 @@
             'atom_template'=> 'atoms/editor.php',
             'atom_vars'    => [
                 'name'    => 'note_content',
-                'content' => '', // Prefill if editing
+                'content' => isset($context['content']) ? $context['content'] : '', // Prefill if editing
                 'settings'=> [
                     'textarea_name' => 'note_content',
                     'textarea_rows' => 10,
@@ -36,6 +39,7 @@
         ]);
 
         // Status row
+        $selected_status = isset($context['status']) ? $context['status'] : 'draft';
         learnwpdata_render_template('molecules/form-row.php', [
             'name'         => 'note_status',
             'label'        => __('Status', 'learnwpdata'),
@@ -48,7 +52,7 @@
                     'archived'  => __('Archived', 'learnwpdata'),
                     'active'    => __('Active', 'learnwpdata'),
                 ],
-                'selected' => 'draft',
+                'selected' => $selected_status,
             ],
         ]);
         ?>
