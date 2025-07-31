@@ -1,1 +1,1 @@
-<?php submit_button($label ?? __('Save', 'learnwpdata')); ?>
+<?php submit_button($context['label'] ?? __('Save', 'learnwpdata')); ?>

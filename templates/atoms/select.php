@@ -1,10 +1,10 @@
 <select 
-    name="<?php echo esc_attr($name); ?>" 
-    id="<?php echo esc_attr($name); ?>"
+    name="<?php echo esc_attr($context['name']); ?>" 
+    id="<?php echo esc_attr($context['name']); ?>"
 >
-    <?php foreach ($options as $value => $label) : ?>
+    <?php foreach ($context['options'] as $value => $label) : ?>
         <option value="<?php echo esc_attr($value); ?>" 
-            <?php selected($value, $selected ?? ''); ?>>
+            <?php selected($value, $context['selected'] ?? ''); ?>>
             <?php echo esc_html($label); ?>
         </option>
     <?php endforeach; ?>

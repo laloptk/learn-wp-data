@@ -1,8 +1,8 @@
 <input 
     type="text"
-    name="<?php echo esc_attr($name); ?>"
-    id="<?php echo esc_attr($name); ?>"
-    value="<?php echo esc_attr($value ?? ''); ?>"
+    name="<?php echo esc_attr($context['name']); ?>"
+    id="<?php echo esc_attr($context['name']); ?>"
+    value="<?php echo esc_attr($context['value'] ?? ''); ?>"
     class="regular-text"
-    <?php echo !empty($required) ? 'required' : ''; ?>
+    <?php echo !empty($context['required']) ? 'required' : ''; ?>
 />

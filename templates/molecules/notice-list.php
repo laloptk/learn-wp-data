@@ -1,5 +1,5 @@
-<?php if (!empty($notices)) : ?>
-    <?php foreach ($notices as $notice) : ?>
+<?php if (!empty($context['notices'])) : ?>
+    <?php foreach ($context['notices'] as $notice) : ?>
         <?php 
         learnwpdata_render_template('atoms/notice.php', [
             'type'    => $notice['type'] ?? 'notice-info',

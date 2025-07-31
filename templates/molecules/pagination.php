@@ -3,11 +3,16 @@
  * Molecule: Advanced Pagination
  *
  * Expects:
- * - $total        → total number of items
- * - $per_page     → items per page
- * - $current_page → current page number
- * - $base_url     → base URL (should already include `page` and `s` if needed)
+ * - $context['total']        → total number of items
+ * - $context['per_page']     → items per page
+ * - $context['current_page'] → current page number
+ * - $context['base_url']     → base URL (should already include `page` and `s` if needed)
  */
+
+$total        = $context['total'];
+$per_page     = $context['per_page'];
+$current_page = $context['current_page'];
+$base_url     = $context['base_url'];
 
 // ✅ If total <= per_page, no pagination needed
 if (empty($total) || $total <= $per_page) {
@@ -29,7 +34,6 @@ $end   = min($total_pages, $start + $max_visible_pages - 1);
 if (($end - $start + 1) < $max_visible_pages) {
     $start = max(1, $end - $max_visible_pages + 1);
 }
-
 ?>
 <div class="tablenav">
     <div class="tablenav-pages">

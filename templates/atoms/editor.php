@@ -3,16 +3,16 @@
  * Atom: WordPress TinyMCE Editor
  *
  * Expects:
- * - $name    → field name (e.g., note_content)
- * - $content → initial content (default empty)
- * - $settings → wp_editor settings array (optional)
+ * - $context['name']    → field name (e.g., note_content)
+ * - $context['content'] → initial content (default empty)
+ * - $context['settings'] → wp_editor settings array (optional)
  */
 
 wp_editor(
-    $content ?? '',
-    $name, // This becomes the HTML id
-    $settings ?? [
-        'textarea_name' => $name,   // Required to save correctly
+    $context['content'] ?? '',
+    $context['name'], // This becomes the HTML id
+    $context['settings'] ?? [
+        'textarea_name' => $context['name'],   // Required to save correctly
         'textarea_rows' => 10,
         'media_buttons' => false,
         'teeny'         => true,   // Minimal toolbar
