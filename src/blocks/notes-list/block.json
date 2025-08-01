@@ -1,0 +1,24 @@
+{
+  "apiVersion": 2,
+  "name": "learnwpdata/notes-list",
+  "title": "Notes List",
+  "category": "widgets",
+  "icon": "list-view",
+  "description": "Displays a list of LearnWPData notes, optionally filtered by status or limited in number.",
+  "keywords": [ "note", "learnwpdata", "list" ],
+  "version": "1.0.0",
+  "textdomain": "learnwpdata",
+  "attributes": {
+    "status": {
+      "type": "string",
+      "default": "published"
+    },
+    "limit": {
+      "type": "number",
+      "default": 5
+    }
+  },
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./editor.css",
+  "style": "file:./style.css"
+}

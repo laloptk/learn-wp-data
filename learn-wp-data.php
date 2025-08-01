@@ -37,3 +37,9 @@ add_action('rest_api_init', function () {
 });
 
 new NotesAdminPage(new NotesRepository());
+
+function learnwpdata_register_blocks() {
+    register_block_type(__DIR__ . '/build/single-note');
+    register_block_type(__DIR__ . '/build/notes-list');
+}
+add_action('init', 'learnwpdata_register_blocks');
