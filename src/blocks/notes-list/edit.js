@@ -7,27 +7,13 @@ import {
 	Notice
 } from '@wordpress/components';
 import apiFetch from '@wordpress/api-fetch';
+import useFetch from '../../hooks/useFetch';
 
 export default function Edit({ attributes, setAttributes }) {
 	const { noteId } = attributes;
 	const blockProps = useBlockProps();
 	const [note, setNote] = useState(null);
-	const [notesList, setNotesList] = useState([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(null);
-
-	// Fetch all notes for dropdown
-	useEffect(() => {
-		apiFetch({ path: '/learnwpdata/v1/notes' })
-			.then((notes) => {
-				setNotesList(notes);
-				setLoading(false);
-			})
-			.catch((err) => {
-				setError('Could not load notes.');
-				setLoading(false);
-			});
-	}, []);
+	const [notesList, loading, error] = useFetch('/learnwpdata/v1/notes');
 
 	// Fetch selected note content
 	useEffect(() => {
